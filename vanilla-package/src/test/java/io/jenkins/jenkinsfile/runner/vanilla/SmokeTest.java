@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.plugins.git.GitException;
 import io.jenkins.plugins.casc.ConfigurationAsCode;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -12,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -238,17 +237,12 @@ public class SmokeTest {
         filesAndContents.put("Jenkinsfile", jfContent);
 
         String scmConfigPath = createTestRepoWithContentAndSCMConfigYAML(filesAndContents, "master");
+        File groovy = new File(getClass().getResource("SmokeTest/groovyDir/init.groovy").getFile());
 
-        try {
-            System.setProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
-            SystemProperties.allowOnAgent("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT");
-            int result = new JFRTestUtil().runAsCLI(jenkinsfile, Arrays.asList("--scm", scmConfigPath));
-            assertThat("JFR should be executed successfully", result, equalTo(0));
-            assertThat(systemOut.getLog(), containsString("README.md exists with content 'Test repository'"));
-            assertThat(systemOut.getLog(), containsString("using credential user1"));
-        } finally {
-            System.clearProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT");
-        }
+        int result = new JFRTestUtil().runAsCLI(jenkinsfile, Arrays.asList("--withInitHooks", groovy.getParentFile().getAbsolutePath(), "--scm", scmConfigPath));
+        assertThat("JFR should be executed successfully", result, equalTo(0));
+        assertThat(systemOut.getLog(), containsString("README.md exists with content 'Test repository'"));
+        assertThat(systemOut.getLog(), containsString("using credential user1"));
     }
 
     private String createTestRepoWithContentAndSCMConfigYAML(Map<String,String> filesAndContents, String branch) throws Exception {
