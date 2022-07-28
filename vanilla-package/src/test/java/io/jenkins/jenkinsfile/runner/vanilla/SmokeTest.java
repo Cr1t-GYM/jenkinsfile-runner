@@ -44,9 +44,6 @@ public class SmokeTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(120);
 
-    @Rule
-    public final ProvideSystemProperty systemProperty = new ProvideSystemProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
-
     @Test
     public void helloWorld() throws Throwable {
         File jenkinsfile = tmp.newFile("Jenkinsfile");
@@ -231,7 +228,6 @@ public class SmokeTest {
 
     @Test
     public void checkoutSCM() throws Throwable {
-        System.getProperties().forEach((k, v) -> System.out.println(k + "\t" + v));
         Map<String,String> filesAndContents = new HashMap<>();
         filesAndContents.put("README.md", "Test repository");
 
@@ -241,10 +237,15 @@ public class SmokeTest {
 
         String scmConfigPath = createTestRepoWithContentAndSCMConfigYAML(filesAndContents, "master");
 
-        int result = new JFRTestUtil().runAsCLI(jenkinsfile, Arrays.asList("--scm", scmConfigPath));
-        assertThat("JFR should be executed successfully", result, equalTo(0));
-        assertThat(systemOut.getLog(), containsString("README.md exists with content 'Test repository'"));
-        assertThat(systemOut.getLog(), containsString("using credential user1"));
+        try {
+            System.setProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
+            int result = new JFRTestUtil().runAsCLI(jenkinsfile, Arrays.asList("--scm", scmConfigPath));
+            assertThat("JFR should be executed successfully", result, equalTo(0));
+            assertThat(systemOut.getLog(), containsString("README.md exists with content 'Test repository'"));
+            assertThat(systemOut.getLog(), containsString("using credential user1"));
+        } finally {
+            System.clearProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT");
+        }
     }
 
     private String createTestRepoWithContentAndSCMConfigYAML(Map<String,String> filesAndContents, String branch) throws Exception {
