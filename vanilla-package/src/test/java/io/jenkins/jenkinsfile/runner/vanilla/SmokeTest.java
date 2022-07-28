@@ -231,6 +231,7 @@ public class SmokeTest {
 
     @Test
     public void checkoutSCM() throws Throwable {
+        System.getProperties().forEach((k, v) -> System.out.println(k + "\t" + v));
         Map<String,String> filesAndContents = new HashMap<>();
         filesAndContents.put("README.md", "Test repository");
 
