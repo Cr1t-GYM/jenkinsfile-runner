@@ -18,6 +18,7 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.TemporaryFolder;
@@ -31,10 +32,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SmokeTest {
 
-    static {
-        System.setProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
-    }
-
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
@@ -46,6 +43,9 @@ public class SmokeTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(120);
+
+    @Rule
+    public final ProvideSystemProperty systemProperty = new ProvideSystemProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
 
     @Test
     public void helloWorld() throws Throwable {

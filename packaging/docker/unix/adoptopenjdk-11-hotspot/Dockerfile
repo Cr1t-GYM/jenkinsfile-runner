@@ -1,9 +1,9 @@
-#FROM jenkins/jenkinsfile-runner:build-mvncache as jenkinsfilerunner-mvncache
+FROM jenkins/jenkinsfile-runner:build-mvncache as jenkinsfilerunner-mvncache
 
-FROM maven:3.6.3-adoptopenjdk-8 as jenkinsfilerunner-build
+FROM maven:3.6.3-adoptopenjdk-11 as jenkinsfilerunner-build
 RUN apt-get update && apt-get install -y unzip
-#ENV MAVEN_OPTS=-Dmaven.repo.local=/mavenrepo
-#COPY --from=jenkinsfilerunner-mvncache /mavenrepo /mavenrepo
+ENV MAVEN_OPTS=-Dmaven.repo.local=/mavenrepo
+COPY --from=jenkinsfilerunner-mvncache /mavenrepo /mavenrepo
 ADD app /jenkinsfile-runner/app
 ADD bootstrap /jenkinsfile-runner/bootstrap
 ADD payload /jenkinsfile-runner/payload
