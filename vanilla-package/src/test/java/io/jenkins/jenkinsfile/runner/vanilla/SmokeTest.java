@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -239,6 +241,7 @@ public class SmokeTest {
 
         try {
             System.setProperty("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT", "true");
+            SystemProperties.allowOnAgent("hudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT");
             int result = new JFRTestUtil().runAsCLI(jenkinsfile, Arrays.asList("--scm", scmConfigPath));
             assertThat("JFR should be executed successfully", result, equalTo(0));
             assertThat(systemOut.getLog(), containsString("README.md exists with content 'Test repository'"));
